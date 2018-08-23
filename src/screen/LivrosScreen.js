@@ -22,6 +22,13 @@ class LivrosScreen extends Component {
     super();
   }
 
+  componentWillMount(){
+    this.props.navigator.setStyle({
+      navBarBackgroundColor: 'blue',
+      navBarHidden: true
+    })
+  }
+
   selectBook = (el) => {
 
      this.props.selectBook(el);
