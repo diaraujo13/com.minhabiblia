@@ -5,7 +5,8 @@ import SQLite from 'react-native-sqlite-storage';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import VersiculoButton from '../component/VersiculoButton';
-import { setChapterId } from '../action';
+import { setChapterId, setBook } from '../action';
+import Share from 'react-native-share';
 
 const deviceWidth = Dimensions.get('window').width-40;
 const deviceHeight = Dimensions.get('window').height;
@@ -30,10 +31,12 @@ class Versiculos extends Component {
 
   componentWillMount(){
 
+    this.props.selectBook(this.props.book);
     
   }
 
   async componentDidMount(){
+
 
       var db = SQLite.openDatabase({
         name : "biblia",
@@ -61,6 +64,7 @@ class Versiculos extends Component {
               Versiculo.position,
               Versiculo.marked,
               Versiculo.markColor, 
+              Versiculo.fav,
               ( SELECT Favoritos.id FROM Favoritos WHERE Favoritos.versiculo = Versiculo.id) as favId,
               ( SELECT COUNT(*) FROM Anotacoes WHERE Anotacoes.versId = Versiculo.id) as quantidadeAnotacoes,
               '["' || GROUP_CONCAT(Anotacoes.content, '","') || '"]' as anotacaoArray
@@ -127,7 +131,7 @@ class Versiculos extends Component {
               Versiculo.position,
               Versiculo.marked,
               Versiculo.markColor, 
-              ( SELECT Favoritos.id FROM Favoritos WHERE Favoritos.versiculo = Versiculo.id) as favId,
+              Versiculo.fav,
               ( SELECT COUNT(*) FROM Anotacoes WHERE Anotacoes.versId = Versiculo.id) as quantidadeAnotacoes,
               '["' || GROUP_CONCAT(Anotacoes.content, '","') || '"]' as anotacaoArray
               FROM Versiculo
@@ -136,14 +140,17 @@ class Versiculos extends Component {
               GROUP BY Versiculo.id, Anotacoes.content
             ` , [] ,
             async (tx, results) => {
-            
-            let rows = results.rows.raw();
-            // console.log(rows);
-            
-            await this.setState({
-                items: rows,
-                carregando: false
-              })
+          
+              console.log('atualizado');
+ 
+              let rows = results.rows.raw();
+              // console.log(rows);
+              
+              await this.setState({
+                  items: rows,
+                  carregando: false
+                })
+
             });
         });
 
@@ -154,6 +161,46 @@ class Versiculos extends Component {
       }
     );
 
+  }
+
+  _fav_versc = () => {
+    var db = SQLite.openDatabase({
+      name : "biblia",
+      createFromLocation : 1
+    }, () => {
+      db.transaction(async (tx) => {
+
+        await tx.executeSql(
+          `
+          UPDATE Versiculo 
+          SET fav = CASE WHEN fav = 1 THEN 0 ELSE 1 END
+          WHERE Versiculo.id = ${this.state.vers.id};
+          ` , [] ,
+          async (tx, results) => {
+            this._selectChapter(this.state.chapterId);
+          });
+      });
+    });
+  }
+
+  _color_versc = () => {
+    var db = SQLite.openDatabase({
+      name : "biblia",
+      createFromLocation : 1
+    }, () => {
+      db.transaction(async (tx) => {
+
+        await tx.executeSql(
+          `
+          UPDATE Versiculo 
+          SET marked = CASE WHEN marked = 1 THEN 0 ELSE 1 END
+          WHERE Versiculo.id = ${this.state.vers.id};
+          ` , [] ,
+          async (tx, results) => {
+            this._selectChapter(this.state.chapterId);
+          });
+      });
+    });
   }
 
   renderRow = ( {item, index} = data ) => <VersiculoButton active={this.state.vers.id == item.id} item={item} callback={this.showSuperiorBar}></VersiculoButton>
@@ -174,17 +221,28 @@ class Versiculos extends Component {
      <Root>
       <View style={{flex: 1}}>
       <View style={{height:typeof this.state.vers.id !== 'undefined' ? 40 : 0, opacity: typeof this.state.vers.id !== 'undefined' ? 40 : 0, flexDirection:'row', backgroundColor:'#222'}}>
-          <TouchableOpacity style={{flex: 1,  alignItems:'center',justifyContent:'center'}}>
-            <Icon name='share' color='white' size={30}></Icon>
+          <TouchableOpacity onPress={() => {
+             let shareOptions = {
+              title: "Compartilhamento",
+              message: this.state.vers.content + " - " +this.state.chapterId+":"+this.state.vers.position +", "+ this.props.book.title + " - Leve Bíblia ",
+            };
+
+            Share.open(shareOptions);
+          }} style={{flex: 1,  alignItems:'center',justifyContent:'center'}}>
+            <Icon name='share-variant' color='white' size={30}></Icon>
           </TouchableOpacity>
-          <TouchableOpacity style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
+          <TouchableOpacity 
+            onPress={this._fav_versc} 
+            style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
             <Icon name='heart' color='white' size={30}></Icon>
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={ () => {
             this.props.navigator.showLightBox({
                   screen: "add_anotacao", 
-                  passProps: {},
+                  passProps: {
+                    vers: this.state.vers
+                  },
               
                   style: {
                       width: deviceWidth,
@@ -202,7 +260,7 @@ class Versiculos extends Component {
             <Text style={{ backgroundColor:'red', opacity: this.state.vers.quantidadeAnotacoes > 0 ? 1 :0, color:'white', padding: 3, fontSize: 13, borderRadius: 7, position:'absolute', top: 3, left: 12,}}>{this.state.vers.quantidadeAnotacoes}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={this.highlight} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
+          <TouchableOpacity onPress={this._color_versc} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
             <Icon name='palette' color='yellow' size={30}></Icon>
           </TouchableOpacity>
    
@@ -214,8 +272,8 @@ class Versiculos extends Component {
           {this.state.maxChapter.map( (el, inx) => {
             return (
               <TouchableOpacity key={inx} onPress={this._selectChapter.bind(this, inx+1)}>
-                <View style={{width: 45, height: 40, alignItems:'center', justifyContent:'center', borderRadius: 5, backgroundColor: this.state.chapterId == inx+1 ? 'red' : '#000', marginBottom: 4}}>
-                  <Text style={{color:'white'}}>{inx+1}</Text>
+                <View style={{width: 45, height: 40, alignItems:'center', justifyContent:'center', borderRadius: 5,  marginBottom: 4}}>
+                  <Text style={{color: this.state.chapterId == inx+1 ? 'red' : '#fff',}}>{inx+1}</Text>
                 </View>
               </TouchableOpacity>
             )
@@ -224,7 +282,7 @@ class Versiculos extends Component {
         </View>
         <FlatList 
         style={{flex: 1}}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.id.toString()}
           data={this.state.items} extraData={this.state.showSuperior} renderItem={this.renderRow}>
         </FlatList>
 
@@ -247,7 +305,8 @@ const mapStateToProps = ({
 
 /** dispatch actions */
 const mapDispatchToProps = dispatch => ({
-  setChapterId: (value) => dispatch(setChapterId(value))
+  setChapterId: (value) => dispatch(setChapterId(value)),
+  selectBook: (value) => dispatch(setBook(value))
 });
 
 

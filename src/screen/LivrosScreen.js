@@ -274,12 +274,13 @@ class LivrosScreen extends Component {
        title: el.title,
        passProps: {
          selectedBook: el.id,
+         book: el
        },
        animated: true, // does the push have transition animation or does it happen immediately (optional)
        animationType: 'slide-horizontal', 
      });
 
-     this.props.selectBook(el);
+     
     
   }
 
@@ -295,13 +296,33 @@ class LivrosScreen extends Component {
     return (
      <Root>
           <Container>
+           
+                {  this.props.selectedBook.id !== 0 ? (
+                 <TouchableOpacity 
+                 onPress={ () => {
+                    this.props.navigator.push({
+                        screen: 'vers',
+                        title: this.props.selectedBook.title,
+                        passProps: {
+                          selectedBook:this.props.selectedBook.id,
+                          book: this.props.selectedBook
+                        },
+                        animated: true, // does the push have transition animation or does it happen immediately (optional)
+                        animationType: 'slide-horizontal', 
+                      });
+                 }}
+                 style={{
+                    position:'absolute', bottom: 10, zIndex: 1012312,
+                    left: 30, borderRadius: 10, opacity: .8, right: 30, backgroundColor: 'black', padding: 10,
+                    alignContent:'center', height: 40}}>
+                     <View >
+                        <Text style={{textAlign:'center', color:'white'}}>CONTINUAR LEITURA: <Text style={{color:'yellow'}}>{this.props.selectedBook.title.toUpperCase()}</Text></Text>   
+                     </View>
+                 </TouchableOpacity>) : null} 
             <Content>
 
               <View style={{flex: 1, padding: 15}}>
 
-                { this.props.selectedBook.id !== 0 ? (<View>
-                    <Text>Continuar {this.props.selectedBook.title.toUpperCase()}</Text>   
-                 </View>) : null} 
                 <Text style={{fontWeight:'bold', color:'#444', fontFamily:'serif',
                  fontSize: 25, letterSpacing:1, textAlign:'center', 
                  borderRadius: 0.5,}}> VELHO TESTAMENTO </Text>

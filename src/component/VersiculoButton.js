@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {  View, TouchableOpacity  } from 'react-native';
 import { Text } from 'native-base';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default class VersiculoButton extends Component {
    state = {
@@ -18,13 +19,13 @@ export default class VersiculoButton extends Component {
 
     return (
       <TouchableOpacity onPress={this._call}>
-      
-        <View style={{ backgroundColor: active ? '#ccc' : '#f8f8f8' }} >
-        <Text style={{ fontFamily:'Avenir-Medium', fontSize: 19, margin: 10}}>
-          <Text style={{color: 'red', fontWeight:'bold', marginTop: -15}}>{item.position}  </Text> 
-          {item.content}
-        </Text> 
-        
+        <View style={{ flexDirection:'row', flex: 1, backgroundColor: active ? '#ccc' : item.marked ? '#f7f17b' :  '#f8f8f8' }} >
+        <Text style={{ fontFamily:'Avenir-Medium', flex: 1, fontSize: 19, margin: 10}}>
+          <Text style={{color: 'red', textAlign:'justify', fontWeight:'bold', marginTop: -15}}>{item.position}  </Text> 
+          {item.content} 
+
+        </Text>
+        {item.fav == 1 ? <Icon  style={{flex: 0, width: 20, alignItems:'center', justifyContent:'center', marginTop: 20}} name='heart' color={'#ff6b6b'} size={16}></Icon> : <View style={{width: 20}}></View>} 
         </View>
       </TouchableOpacity>
     )

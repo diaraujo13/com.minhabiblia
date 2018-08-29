@@ -27,6 +27,7 @@ export default class AddAnotacao extends Component {
       }else {
     return (
       <View style={{flex: 0, padding: 20, marginHorizontal: 20, height: 300, backgroundColor: '#f8f8f8', borderRadius: 10}}>
+        <Text>{JSON.stringify(this.props)}</Text>
         <Text style={{textAlign:'center', fontWeight:'bold', color: '#444'}}> ADICIONAR ANOTAÇÃO </Text>
         <Textarea
         style={{flex: 1, borderColor:'#ccc', borderWidth: 1, margin: 10, padding: 4, borderRadius: 4}}
