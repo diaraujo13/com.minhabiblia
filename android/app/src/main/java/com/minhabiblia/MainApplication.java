@@ -3,6 +3,7 @@ package com.minhabiblia;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import fr.greweb.reactnativeviewshot.RNViewShotPackage;
 import cl.json.RNSharePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.facebook.react.ReactNativeHost;
@@ -32,7 +33,8 @@ public class MainApplication extends  NavigationApplication implements ShareAppl
          return Arrays.<ReactPackage>asList(
              new VectorIconsPackage(),
              new SQLitePluginPackage(),
-             new RNSharePackage()
+             new RNSharePackage(),
+             new RNViewShotPackage()
          );
     }
 

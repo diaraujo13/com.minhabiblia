@@ -11,6 +11,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LivrosScreen from './screen/LivrosScreen';
 import Versiculos from './screen/Versiculos';
 import AddAnotacao from './lightbox/AddAnotacao';
+import Favoritos from './screen/Favoritos';
+import Busca from './screen/Busca';
+import ImageGen from './screen/ImageGen';
+import Anotacoes from './screen/Anotacoes';
 
 
 const MainStore = store();
@@ -19,6 +23,10 @@ const MainStore = store();
 Navigation.registerComponent('start', () => LivrosScreen, MainStore, Provider);
 Navigation.registerComponent('vers', () => Versiculos, MainStore, Provider);
 Navigation.registerComponent('add_anotacao', () => AddAnotacao, MainStore, Provider);
+Navigation.registerComponent('fav', () => Favoritos, MainStore, Provider);
+Navigation.registerComponent('busca', () => Busca, MainStore, Provider);
+Navigation.registerComponent('gen', () => ImageGen, MainStore, Provider);
+Navigation.registerComponent('anotacoes', () => Anotacoes, MainStore, Provider);
 
 
 
@@ -38,26 +46,31 @@ Navigation.startTabBasedApp({
       label: 'Livros', // tab label as appears under the icon in iOS (optional)
       screen: 'start', // unique ID registered with Navigation.registerScreen
       icon: results[0], // local image asset for the tab icon unselected state (optional on iOS)
-      navBarHidden: true
+      navBarHidden: true,
+      navigatorStyle: {
+        navBarHidden: true,
+        statusBarColor: '#000000', 
+      }
     }, 
     {
       title:'Favoritos',
       label: "Favoritos", // tab label as appears under the icon in iOS (optional)
-      screen: 'start', // unique ID registered with Navigation.registerScreen
-      icon: results[1]
+      screen: 'fav', // unique ID registered with Navigation.registerScreen
+      icon: results[1],
+      navigatorStyle: {
+        navBarHidden: true,
+        statusBarColor: '#000000', 
+      }
     },
     {
       title:'Buscar',
       label: "Buscar", // tab label as appears under the icon in iOS (optional)
-      screen: 'start', // unique ID registered with Navigation.registerScreen
-      icon: results[2]
-    },
-    {
-      title:'Mais',
-      label: "Buscar", // tab label as appears under the icon in iOS (optional)
-      screen: 'start', // unique ID registered with Navigation.registerScreen
-      icon: results[2]
-    },
+      screen: 'busca', // unique ID registered with Navigation.registerScreen
+      icon: results[2],
+      navigatorStyle: {
+        navBarHidden: true
+      }
+    }
   ],
 
   appStyle: {
@@ -65,6 +78,9 @@ Navigation.startTabBasedApp({
     tabBarBackgroundColor: '#f8f8f8',
     tabBarButtonColor:'#ccc',
     tabBarSelectedButtonColor: '#222',
-    statusBarHidden: true,
+    statusBarHidden: false,
+    navBarHidden: true,
+    statusBarColor: '#000000', 
+
   }});
 })

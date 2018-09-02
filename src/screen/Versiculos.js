@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, View,FlatList,ActivityIndicator, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { Clipboard, ToastAndroid, Alert, View,FlatList,ActivityIndicator, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import {Text, Root } from 'native-base';
 import SQLite from 'react-native-sqlite-storage';
 import { connect } from 'react-redux';
@@ -65,7 +65,6 @@ class Versiculos extends Component {
               Versiculo.marked,
               Versiculo.markColor, 
               Versiculo.fav,
-              ( SELECT Favoritos.id FROM Favoritos WHERE Favoritos.versiculo = Versiculo.id) as favId,
               ( SELECT COUNT(*) FROM Anotacoes WHERE Anotacoes.versId = Versiculo.id) as quantidadeAnotacoes,
               '["' || GROUP_CONCAT(Anotacoes.content, '","') || '"]' as anotacaoArray
               FROM Versiculo
@@ -178,6 +177,8 @@ class Versiculos extends Component {
           ` , [] ,
           async (tx, results) => {
             this._selectChapter(this.state.chapterId);
+            this.setState({ vers: {} });
+
           });
       });
     });
@@ -198,9 +199,40 @@ class Versiculos extends Component {
           ` , [] ,
           async (tx, results) => {
             this._selectChapter(this.state.chapterId);
+            this.setState({ vers: {} })
           });
       });
     });
+  }
+
+  _anotacoes = () => {
+    this.props.navigator.push({
+      screen: 'anotacoes',
+      title:'Anotações do Versículo',
+      passProps: {
+        versId: this.state.vers.id
+      }
+    })
+  }
+  _toClipBoard = () => {
+
+    Clipboard.setString(this.state.vers.content);
+
+    ToastAndroid.show('O versículo foi copiado com sucesso!', ToastAndroid.SHORT);
+  }
+  
+  _gerarImage = () => {
+    this.props.navigator.push({
+      screen:'gen',
+      title:'Gerar imagem',
+      passProps: {
+        vers: {
+          ...this.state.vers,
+          chapterId: this.state.chapterId,
+          book: this.props.book.title
+        }
+      }
+    })
   }
 
   renderRow = ( {item, index} = data ) => <VersiculoButton active={this.state.vers.id == item.id} item={item} callback={this.showSuperiorBar}></VersiculoButton>
@@ -221,6 +253,11 @@ class Versiculos extends Component {
      <Root>
       <View style={{flex: 1}}>
       <View style={{height:typeof this.state.vers.id !== 'undefined' ? 40 : 0, opacity: typeof this.state.vers.id !== 'undefined' ? 40 : 0, flexDirection:'row', backgroundColor:'#222'}}>
+          <TouchableOpacity 
+            onPress={this._toClipBoard} 
+            style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
+            <Icon name='content-copy' color='white' size={30}></Icon>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => {
              let shareOptions = {
               title: "Compartilhamento",
@@ -241,7 +278,8 @@ class Versiculos extends Component {
             this.props.navigator.showLightBox({
                   screen: "add_anotacao", 
                   passProps: {
-                    vers: this.state.vers
+                    vers: this.state.vers,
+                    width: deviceWidth,
                   },
               
                   style: {
@@ -255,15 +293,17 @@ class Versiculos extends Component {
             style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
             <Icon name='note-plus-outline' color='white' size={30}></Icon>
           </TouchableOpacity>
-          <TouchableOpacity onPress={this.highlight} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
-            <Icon name='playlist-edit' color='white' size={30}></Icon>
-            <Text style={{ backgroundColor:'red', opacity: this.state.vers.quantidadeAnotacoes > 0 ? 1 :0, color:'white', padding: 3, fontSize: 13, borderRadius: 7, position:'absolute', top: 3, left: 12,}}>{this.state.vers.quantidadeAnotacoes}</Text>
+          <TouchableOpacity onPress={this._anotacoes} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
+            <Icon name='view-list' color='white' size={30}></Icon>
+            <Text style={{ backgroundColor:'red', opacity: this.state.vers.quantidadeAnotacoes > 0 ? this.state.vers.quantidadeAnotacoes :0, color:'white', padding: 3, fontSize: 13, borderRadius: 7, position:'absolute', top: 3, left: 12,}}>{this.state.vers.quantidadeAnotacoes}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={this._color_versc} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
-            <Icon name='palette' color='yellow' size={30}></Icon>
+            <Icon name='grease-pencil' color='yellow' size={30}></Icon>
           </TouchableOpacity>
-   
+          <TouchableOpacity onPress={this._gerarImage} style={{flex: 1, alignItems:'center',justifyContent:'center'}}>
+            <Icon name='image' color='white' size={30}></Icon>
+          </TouchableOpacity>
       </View>
         <View style={{flex: 1, flexDirection:'row',}}>
         <View style={{backgroundColor:'#222', width: 60, flex: 0, padding: 5 }}>
